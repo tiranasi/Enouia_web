@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id                      Int       @id @default(autoincrement())
+  email                   String    @unique
+  password_hash           String?
+  nickname                String?
+  full_name               String?
+  avatar_url              String?
+  bio                     String?
+  subscription_tier       String    @default("free")
+  daily_chat_count        Int       @default(0)
+  daily_chat_reset_date   DateTime?
+  daily_report_count      Int       @default(0)
+  daily_report_reset_date DateTime?
+  created_at              DateTime  @default(now())
+  updated_at              DateTime  @updatedAt
+}
+
+model Post {
+  id               Int       @id @default(autoincrement())
+  title            String
+  content          String
+  category         String
+  image_url        String?
+  tagsJson         String?   // JSON string of tags
+  likes_count      Int       @default(0)
+  comments_count   Int       @default(0)
+  likedByJson      String?   // JSON string of emails
+  shared_style_id  Int?
+  sharedStyleDataJson String?
+  created_by       String
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  post_id    Int
+  content    String
+  author_name String
+  created_by String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Notification {
+  id              Int      @id @default(autoincrement())
+  type            String
+  post_id         Int?
+  post_title      String?
+  actor_email     String?
+  actor_name      String?
+  recipient_email String
+  is_read         Boolean  @default(false)
+  comment_content String?
+  created_at      DateTime @default(now())
+}
+
+model Favorite {
+  id               Int      @id @default(autoincrement())
+  post_id          Int
+  post_title       String
+  post_author_email String
+  created_by       String
+  created_at       DateTime @default(now())
+}
+
+model ChatMessage {
+  id         Int      @id @default(autoincrement())
+  chat_id    Int
+  role       String
+  content    String
+  timestamp  DateTime @default(now())
+  chat       ChatHistory @relation(fields: [chat_id], references: [id])
+}
+
+model ChatHistory {
+  id              Int          @id @default(autoincrement())
+  title           String
+  style_name      String
+  style_avatar    String?
+  last_message_at DateTime     @default(now())
+  created_by      String
+  messages        ChatMessage[]
+  messagesJson    String?
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+}
+
+model ChatStyle {
+  id                   Int      @id @default(autoincrement())
+  name                 String
+  avatar               String?
+  personality          String?
+  background           String?
+  dialogue_style       String?
+  is_default           Boolean  @default(false)
+  is_imported          Boolean  @default(false)
+  original_author_email String?
+  original_author_name  String?
+  original_style_id     Int?
+  is_deleted_by_author  Boolean  @default(false)
+  created_by            String
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+}
+
+model EmotionReport {
+  id               Int      @id @default(autoincrement())
+  title            String
+  selectedChatsJson String?  // JSON string of chat ids
+  status           String   @default("pending")
+  analysisResultJson String?
+  analyzed_at      DateTime?
+  is_viewed        Boolean  @default(false)
+  created_by       String
+  created_at       DateTime @default(now())
+}
+
+model TrendAnalysis {
+  id               Int      @id @default(autoincrement())
+  title            String
+  selectedReportsJson String? // JSON string of report ids
+  status           String   @default("pending")
+  trendResultJson  String?
+  analyzed_at      DateTime?
+  created_by       String
+  created_at       DateTime @default(now())
+}
+
+model Course {
+  id                 Int      @id @default(autoincrement())
+  cover_image        String?
+  title              String
+  partner_name       String?
+  description        String?
+  total_lessons      Int      @default(0)
+  plus_trial_lessons Int      @default(0)
+  free_trial_lessons Int      @default(0)
+  price              Float    @default(0)
+  plus_discount      Float    @default(0)
+  is_featured        Boolean  @default(false)
+  created_at         DateTime @default(now())
+}

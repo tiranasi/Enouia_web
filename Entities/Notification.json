@@ -1,0 +1,52 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "like",
+        "favorite",
+        "comment"
+      ],
+      "description": "\u901a\u77e5\u7c7b\u578b"
+    },
+    "post_id": {
+      "type": "string",
+      "description": "\u76f8\u5173\u5e16\u5b50ID"
+    },
+    "post_title": {
+      "type": "string",
+      "description": "\u5e16\u5b50\u6807\u9898"
+    },
+    "actor_email": {
+      "type": "string",
+      "description": "\u89e6\u53d1\u901a\u77e5\u7684\u7528\u6237\u90ae\u7bb1"
+    },
+    "actor_name": {
+      "type": "string",
+      "description": "\u89e6\u53d1\u901a\u77e5\u7684\u7528\u6237\u540d\u79f0"
+    },
+    "recipient_email": {
+      "type": "string",
+      "description": "\u63a5\u6536\u901a\u77e5\u7684\u7528\u6237\u90ae\u7bb1"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u662f\u5426\u5df2\u8bfb"
+    },
+    "comment_content": {
+      "type": "string",
+      "description": "\u8bc4\u8bba\u5185\u5bb9\uff08\u4ec5\u8bc4\u8bba\u7c7b\u578b\uff09"
+    }
+  },
+  "required": [
+    "type",
+    "post_id",
+    "post_title",
+    "actor_email",
+    "actor_name",
+    "recipient_email"
+  ]
+}

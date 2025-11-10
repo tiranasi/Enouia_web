@@ -1,0 +1,57 @@
+{
+  "name": "ChatStyle",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "\u98ce\u683c\u540d\u79f0"
+    },
+    "avatar": {
+      "type": "string",
+      "description": "\u5934\u50cfURL\u6216emoji"
+    },
+    "personality": {
+      "type": "string",
+      "description": "\u6027\u683c\u7279\u70b9"
+    },
+    "background": {
+      "type": "string",
+      "description": "\u80cc\u666f\u6545\u4e8b"
+    },
+    "dialogue_style": {
+      "type": "string",
+      "description": "\u5bf9\u8bdd\u65b9\u5f0f"
+    },
+    "is_default": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u662f\u5426\u4e3a\u9ed8\u8ba4\u98ce\u683c"
+    },
+    "is_imported": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u662f\u5426\u4e3a\u5bfc\u5165\u7684\u98ce\u683c"
+    },
+    "original_author_email": {
+      "type": "string",
+      "description": "\u539f\u4f5c\u8005\u90ae\u7bb1\uff08\u5bfc\u5165\u7684\u98ce\u683c\uff09"
+    },
+    "original_author_name": {
+      "type": "string",
+      "description": "\u539f\u4f5c\u8005\u540d\u79f0\uff08\u5bfc\u5165\u7684\u98ce\u683c\uff09"
+    },
+    "original_style_id": {
+      "type": "string",
+      "description": "\u539f\u59cb\u98ce\u683cID\uff08\u5bfc\u5165\u7684\u98ce\u683c\uff09"
+    },
+    "is_deleted_by_author": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u662f\u5426\u88ab\u539f\u4f5c\u8005\u5220\u9664"
+    }
+  },
+  "required": [
+    "name",
+    "personality"
+  ]
+}

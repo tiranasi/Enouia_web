@@ -1,0 +1,89 @@
+{
+  "name": "Post",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "\u5e16\u5b50\u6807\u9898"
+    },
+    "content": {
+      "type": "string",
+      "description": "\u5e16\u5b50\u5185\u5bb9"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "AI Relief",
+        "Treehole",
+        "Support Center",
+        "Challenges"
+      ],
+      "description": "\u5e16\u5b50\u5206\u533a"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "\u56fe\u7247URL"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u6807\u7b7e"
+    },
+    "likes_count": {
+      "type": "integer",
+      "default": 0,
+      "description": "\u70b9\u8d5e\u6570"
+    },
+    "comments_count": {
+      "type": "integer",
+      "default": 0,
+      "description": "\u8bc4\u8bba\u6570"
+    },
+    "liked_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "\u70b9\u8d5e\u7528\u6237\u5217\u8868",
+      "default": []
+    },
+    "shared_style_id": {
+      "type": "string",
+      "description": "\u5206\u4eab\u7684\u89d2\u8272\u98ce\u683cID\uff08\u4ec5AI Relief\u5206\u533a\uff09"
+    },
+    "shared_style_data": {
+      "type": "object",
+      "description": "\u5206\u4eab\u7684\u89d2\u8272\u98ce\u683c\u6570\u636e\u5feb\u7167",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "personality": {
+          "type": "string"
+        },
+        "background": {
+          "type": "string"
+        },
+        "dialogue_style": {
+          "type": "string"
+        },
+        "author_name": {
+          "type": "string"
+        },
+        "author_email": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "title",
+    "content",
+    "category"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "Comment",
+  "type": "object",
+  "properties": {
+    "post_id": {
+      "type": "string",
+      "description": "\u5e16\u5b50ID"
+    },
+    "content": {
+      "type": "string",
+      "description": "\u8bc4\u8bba\u5185\u5bb9"
+    },
+    "author_name": {
+      "type": "string",
+      "description": "\u8bc4\u8bba\u8005\u6635\u79f0"
+    }
+  },
+  "required": [
+    "post_id",
+    "content"
+  ]
+}
