@@ -1,22 +1,27 @@
 import express from 'express';
 import cors from 'cors';
-import bodyParser from 'body-parser';
 import { PrismaClient } from '@prisma/client';
 import multer from 'multer';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const prisma = new PrismaClient();
 const app = express();
 app.set('trust proxy', 1);
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Local uploads (serve via /api/uploads with relative URLs)
-try { fs.mkdirSync(path.join(process.cwd(), 'uploads'), { recursive: true }); } catch {}
-app.use('/api/uploads', express.static(path.join(process.cwd(), 'uploads')));
+const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
+try { fs.mkdirSync(UPLOAD_DIR, { recursive: true }); } catch {}
+app.use('/api/uploads', express.static(UPLOAD_DIR));
 
 // Helper: normalize entity name to model
 const entityMap = {
@@ -41,6 +46,9 @@ function parseJsonSafe(val, fallback = null) {
 function normalizeUploadUrl(u) {
   if (!u || typeof u !== 'string') return u;
   if (u.startsWith('/api/uploads/')) return u;
+  // http(s)://localhost:3001/api/uploads/xxx -> /api/uploads/xxx
+  const a = u.match(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/api\/uploads\/(.+)$/i);
+  if (a) return `/api/uploads/${a[3]}`;
   // localhost or 127.0.0.1 absolute URLs -> relative
   const m = u.match(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/uploads\/(.+)$/i);
   if (m) return `/api/uploads/${m[3]}`;
@@ -373,11 +381,10 @@ app.post('/api/integrations/core/invokeLLM', async (req, res) => {
 
 // Local upload (multipart)
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, path.join(process.cwd(), 'uploads')),
+  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname || '') || '';
-    const name = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
-    cb(null, name);
+    const ext = path.extname(file.originalname || '');
+    cb(null, `${Date.now()}-${file.fieldname}${ext}`);
   },
 });
 const upload = multer({
@@ -389,9 +396,10 @@ const upload = multer({
   },
 });
 app.post('/api/integrations/core/uploadFile', authRequired, upload.single('file'), (req, res) => {
-  if (!req.file) return res.status(400).send('No file');
-  const relativeUrl = `/api/uploads/${req.file.filename}`;
-  // Return relative URL to be compatible behind Nginx; keep file_url for existing frontend usage
+  if (!req.file) return res.status(400).json({ error: 'no file' });
+  const filename = path.basename(req.file.path || req.file.filename);
+  const relativeUrl = `/api/uploads/${filename}`;
+  // Return relative URL; keep file_url for compatibility with existing frontend usage
   res.json({ url: relativeUrl, file_url: relativeUrl });
 });
 
@@ -399,3 +407,4 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, '127.0.0.1', () => {
   console.log(`API server on http://127.0.0.1:${PORT}`);
 });
+
