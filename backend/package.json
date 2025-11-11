@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "node src/server.js",
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed.js",
+    "fix:urls": "node prisma/fixUrls.js"
   },
   "dependencies": {
     "express": "^4.19.2",
