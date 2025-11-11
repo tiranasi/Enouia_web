@@ -11,6 +11,7 @@ import ChatBubble from '../components/eunoia/ChatBubble';
 import QuickChip from '../components/eunoia/QuickChip';
 import BottomNav from '../components/eunoia/BottomNav';
 import { base44 } from '@/api/base44Client';
+import { isRenderableImage } from '@/utils/image';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 
@@ -613,7 +614,7 @@ export default function EunoiaChat() {
           {isAiTyping && (
             <div className="flex gap-2 mb-4">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {currentAiAvatar?.startsWith('http') ? (
+                {isRenderableImage(currentAiAvatar) ? (
                   <img src={currentAiAvatar} alt="AI" className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-base">{currentAiAvatar}</span>

@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import BottomNav from '../components/eunoia/BottomNav';
 import { base44 } from '@/api/base44Client';
+import { isRenderableImage } from '@/utils/image';
 import { useQuery } from '@tanstack/react-query';
 
 const featureGrid = [
@@ -134,7 +135,7 @@ export default function EunoiaMe() {
           <Card className="p-6 rounded-3xl shadow-sm border-0">
             <div className="flex items-start gap-4 mb-4">
               <div className="w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
-                {displayAvatar?.startsWith('http') ? (
+                {isRenderableImage(displayAvatar) ? (
                   <img src={displayAvatar} alt={displayName} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-2xl font-bold">

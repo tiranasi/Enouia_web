@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge'; // Added Badge import
 import { base44 } from '@/api/base44Client';
+import { isRenderableImage } from '@/utils/image';
 import { useQuery } from '@tanstack/react-query';
 
 const systemStyles = [
@@ -217,7 +218,7 @@ export default function StyleSelector({ currentStyle = '暖心陪伴', onStyleCh
                       </DropdownMenu>
                     </div>
                     <div className="text-center">
-                      {style.avatar?.startsWith('http') ? (
+                      {isRenderableImage(style.avatar) ? (
                         <img 
                           src={style.avatar} 
                           alt={style.name}
@@ -283,7 +284,7 @@ export default function StyleSelector({ currentStyle = '暖心陪伴', onStyleCh
                         </DropdownMenu>
                       </div>
                       <div className="text-center">
-                        {style.avatar?.startsWith('http') ? (
+                        {isRenderableImage(style.avatar) ? (
                           <img 
                             src={style.avatar} 
                             alt={style.name}

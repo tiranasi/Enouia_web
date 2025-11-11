@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { base44 } from '@/api/base44Client';
+import { isRenderableImage } from '@/utils/image';
 import { useQuery } from '@tanstack/react-query';
 
 const emojiOptions = ['😊', '🌸', '📚', '🎨', '🌟', '🎵', '🦋', '🌈', '☕', '🌙', '🐱', '🎭'];
@@ -47,7 +48,7 @@ export default function CreateStyle() {
         background: existingStyle.background || '',
         dialogue_style: existingStyle.dialogue_style || '',
       });
-      if (existingStyle.avatar?.startsWith('http')) {
+      if (isRenderableImage(existingStyle.avatar)) {
         setAvatarType('image');
       }
     }
@@ -163,7 +164,7 @@ export default function CreateStyle() {
             </div>
           ) : (
             <div>
-              {formData.avatar?.startsWith('http') ? (
+              {isRenderableImage(formData.avatar) ? (
                 <div className="relative w-32 h-32 mx-auto mb-4">
                   <img
                     src={formData.avatar}
@@ -195,7 +196,7 @@ export default function CreateStyle() {
                   />
                 </label>
               )}
-              {!formData.avatar?.startsWith('http') && (
+              {!isRenderableImage(formData.avatar) && (
                 <input
                   id="avatar-upload"
                   type="file"

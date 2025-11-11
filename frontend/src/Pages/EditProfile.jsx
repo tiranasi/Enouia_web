@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { base44 } from '@/api/base44Client';
+import { isRenderableImage } from '@/utils/image';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export default function EditProfile() {
@@ -64,8 +65,7 @@ export default function EditProfile() {
 
   const renderAvatar = () => {
     const av = formData.avatar;
-    const isImage = typeof av === 'string' && (av.startsWith('http') || av.startsWith('data:'));
-    if (isImage) return <img src={av} alt="Avatar" className="w-full h-full object-cover" />;
+    if (isRenderableImage(av)) return <img src={av} alt="Avatar" className="w-full h-full object-cover" />;
     return (
       <div className="w-full h-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-3xl font-bold">
         {(formData.nickname || displayName)?.[0]?.toUpperCase() || 'U'}
@@ -155,4 +155,3 @@ export default function EditProfile() {
 }
 
 // 重复的组件定义已移除，保留文件顶部的主定义。
-

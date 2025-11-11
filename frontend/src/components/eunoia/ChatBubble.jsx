@@ -1,4 +1,5 @@
 import React from 'react';
+import { isRenderableImage } from '@/utils/image';
 
 export default function ChatBubble({ message, isUser, isFirst, userAvatar, userName, aiAvatar, styleName }) {
   return (
@@ -7,7 +8,7 @@ export default function ChatBubble({ message, isUser, isFirst, userAvatar, userN
       <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden">
         {isUser ? (
           <div className="w-full h-full bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center text-white font-medium">
-            {userAvatar?.startsWith('http') ? (
+            {isRenderableImage(userAvatar) ? (
               <img src={userAvatar} alt="User" className="w-full h-full object-cover" />
             ) : (
               <span className="text-base">{userAvatar || '😊'}</span>
@@ -15,7 +16,7 @@ export default function ChatBubble({ message, isUser, isFirst, userAvatar, userN
           </div>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-medium">
-            {aiAvatar?.startsWith('http') ? (
+            {isRenderableImage(aiAvatar) ? (
               <img src={aiAvatar} alt="AI" className="w-full h-full object-cover" />
             ) : (
               <span className="text-base">{aiAvatar || '🤗'}</span>

@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge'; // Keep Badge import, it's used
 import CategoryBadge from '../components/eunoia/CategoryBadge';
 import { base44 } from '@/api/base44Client';
+import { isRenderableImage } from '@/utils/image';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 
@@ -302,7 +303,7 @@ export default function PostDetail() {
             {/* 发帖人头像与昵称 */}
             <div className="flex items-center gap-3 mb-3">
               <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0">
-                {authorProfile?.avatar_url?.startsWith('http') ? (
+                {isRenderableImage(authorProfile?.avatar_url) ? (
                   <img src={authorProfile.avatar_url} alt="作者头像" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-sm font-semibold">
@@ -331,7 +332,7 @@ export default function PostDetail() {
                   <>
                     <div className="flex items-start gap-3 mb-3">
                       <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center flex-shrink-0">
-                        {post.shared_style_data.avatar?.startsWith('http') ? (
+                        {isRenderableImage(post.shared_style_data?.avatar) ? (
                           <img src={post.shared_style_data.avatar} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <span className="text-2xl">{post.shared_style_data.avatar || '🙂'}</span>
@@ -431,7 +432,7 @@ export default function PostDetail() {
           <Card className="p-4 rounded-3xl shadow-sm border-0">
             <div className="flex gap-2 items-start">
               <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-                { (user?.avatar_url || user?.avatar)?.startsWith('http') ? (
+                {isRenderableImage(user?.avatar_url || user?.avatar) ? (
                   <img src={user?.avatar_url || user?.avatar} alt="Me" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-sm font-semibold">
@@ -462,7 +463,7 @@ export default function PostDetail() {
               <Card key={comment.id} className="p-4 rounded-2xl shadow-sm border-0">
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-                    {commentProfiles[comment.created_by]?.avatar_url?.startsWith('http') ? (
+                    {isRenderableImage(commentProfiles[comment.created_by]?.avatar_url) ? (
                       <img src={commentProfiles[comment.created_by].avatar_url} alt="头像" className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white text-sm font-semibold">

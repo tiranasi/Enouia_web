@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { isRenderableImage } from '@/utils/image';
 
 const categories = [
   { id: 'AI Relief', name: 'AI Relief', color: 'bg-teal-100 text-teal-700 border-teal-300' },
@@ -202,7 +203,7 @@ export default function CreatePost() {
                     {myStyles.map((style) => (
                       <SelectItem key={style.id} value={String(style.id)}>
                         <div className="flex items-center gap-2">
-                          {style.avatar?.startsWith('http') ? (
+                          {isRenderableImage(style.avatar) ? (
                             <img src={style.avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
                           ) : (
                             <span className="text-lg">{style.avatar || '😊'}</span>

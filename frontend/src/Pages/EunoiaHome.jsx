@@ -11,6 +11,7 @@ import ActionCard from '../components/eunoia/ActionCard';
 import PostCard from '../components/eunoia/PostCard';
 import BottomNav from '../components/eunoia/BottomNav';
 import { base44 } from '@/api/base44Client';
+import { isRenderableImage } from '@/utils/image';
 import { useQuery } from '@tanstack/react-query';
 
 const quickActions = [
@@ -243,7 +244,7 @@ export default function EunoiaHome() {
             >
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-xl flex-shrink-0 overflow-hidden">
-                  {chatHistories[0].style_avatar?.startsWith('http') ? (
+                  {isRenderableImage(chatHistories[0].style_avatar) ? (
                     <img 
                       src={chatHistories[0].style_avatar} 
                       alt="" 
