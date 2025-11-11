@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = '/api';
 
 function qs(params = {}) {
   // 过滤 undefined/null/空字符串，避免出现 ?order=undefined&limit=undefined

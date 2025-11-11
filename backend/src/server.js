@@ -10,12 +10,13 @@ import path from 'path';
 
 const prisma = new PrismaClient();
 const app = express();
+app.set('trust proxy', 1);
 app.use(cors());
 app.use(bodyParser.json());
 
-// Local uploads
+// Local uploads (serve via /api/uploads with relative URLs)
 try { fs.mkdirSync(path.join(process.cwd(), 'uploads'), { recursive: true }); } catch {}
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+app.use('/api/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Helper: normalize entity name to model
 const entityMap = {
@@ -36,11 +37,24 @@ function parseJsonSafe(val, fallback = null) {
   try { return JSON.parse(val); } catch { return fallback; }
 }
 
+// Normalize file URLs for uploads when serving behind Nginx
+function normalizeUploadUrl(u) {
+  if (!u || typeof u !== 'string') return u;
+  if (u.startsWith('/api/uploads/')) return u;
+  // localhost or 127.0.0.1 absolute URLs -> relative
+  const m = u.match(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/uploads\/(.+)$/i);
+  if (m) return `/api/uploads/${m[3]}`;
+  // plain absolute path starting with /uploads
+  if (u.startsWith('/uploads/')) return `/api/uploads/${u.slice('/uploads/'.length)}`;
+  return u;
+}
+
 function toFrontend(entity, item) {
   if (!item) return item;
   const x = { ...item };
   switch (entity) {
     case 'Post':
+      x.image_url = normalizeUploadUrl(item.image_url);
       x.tags = parseJsonSafe(item.tagsJson, []);
       x.liked_by = parseJsonSafe(item.likedByJson, []);
       x.shared_style_data = parseJsonSafe(item.sharedStyleDataJson, null);
@@ -57,8 +71,15 @@ function toFrontend(entity, item) {
       delete x.selectedReportsJson; delete x.trendResultJson;
       break;
     case 'ChatHistory':
+      x.style_avatar = normalizeUploadUrl(item.style_avatar);
       x.messages = parseJsonSafe(item.messagesJson, []);
       delete x.messagesJson;
+      break;
+    case 'ChatStyle':
+      x.avatar = normalizeUploadUrl(item.avatar);
+      break;
+    case 'Course':
+      x.cover_image = normalizeUploadUrl(item.cover_image);
       break;
     default:
       break;
@@ -146,7 +167,7 @@ app.post('/api/auth/login', async (req, res) => {
 app.get('/api/me', authRequired, async (req, res) => {
   const user = await prisma.user.findUnique({ where: { id: req.user.id } });
   if (!user) return res.status(404).send('User not found');
-  res.json(user);
+  res.json({ ...user, avatar_url: normalizeUploadUrl(user.avatar_url) });
 });
 
 app.put('/api/me', authRequired, async (req, res) => {
@@ -167,7 +188,7 @@ app.get('/api/users/by-email/:email', authRequired, async (req, res) => {
     email: user.email,
     nickname: user.nickname || null,
     full_name: user.full_name || null,
-    avatar_url: user.avatar_url || null,
+    avatar_url: normalizeUploadUrl(user.avatar_url) || null,
     bio: user.bio || null,
   };
   res.json(profile);
@@ -359,11 +380,12 @@ const upload = multer({
 });
 app.post('/api/integrations/core/uploadFile', authRequired, upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).send('No file');
-  const url = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-  res.json({ file_url: url });
+  const relativeUrl = `/api/uploads/${req.file.filename}`;
+  // Return relative URL to be compatible behind Nginx; keep file_url for existing frontend usage
+  res.json({ url: relativeUrl, file_url: relativeUrl });
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`API server listening on http://localhost:${PORT}`);
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`API server on http://127.0.0.1:${PORT}`);
 });
