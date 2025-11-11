@@ -91,6 +91,7 @@ function fromFrontend(entity, data) {
   const d = { ...data };
   switch (entity) {
     case 'Post':
+      if (d.image_url !== undefined) d.image_url = normalizeUploadUrl(d.image_url);
       if (Array.isArray(d.tags)) d.tagsJson = JSON.stringify(d.tags);
       if (Array.isArray(d.liked_by)) d.likedByJson = JSON.stringify(d.liked_by);
       if (d.shared_style_data && typeof d.shared_style_data === 'object') d.sharedStyleDataJson = JSON.stringify(d.shared_style_data);
@@ -119,8 +120,15 @@ function fromFrontend(entity, data) {
       delete d.selected_reports; delete d.trend_result;
       break;
     case 'ChatHistory':
+      if (d.style_avatar !== undefined) d.style_avatar = normalizeUploadUrl(d.style_avatar);
       if (Array.isArray(d.messages)) d.messagesJson = JSON.stringify(d.messages);
       delete d.messages;
+      break;
+    case 'ChatStyle':
+      if (d.avatar !== undefined) d.avatar = normalizeUploadUrl(d.avatar);
+      break;
+    case 'Course':
+      if (d.cover_image !== undefined) d.cover_image = normalizeUploadUrl(d.cover_image);
       break;
     default:
       break;
@@ -171,9 +179,11 @@ app.get('/api/me', authRequired, async (req, res) => {
 });
 
 app.put('/api/me', authRequired, async (req, res) => {
-  const { password, password_hash, email, ...rest } = req.body || {};
-  const updated = await prisma.user.update({ where: { id: req.user.id }, data: rest });
-  res.json(updated);
+  const { password, password_hash, email, avatar_url, ...rest } = req.body || {};
+  const data = { ...rest };
+  if (avatar_url !== undefined) data.avatar_url = normalizeUploadUrl(avatar_url);
+  const updated = await prisma.user.update({ where: { id: req.user.id }, data });
+  res.json({ ...updated, avatar_url: normalizeUploadUrl(updated.avatar_url) });
 });
 
 // Public profile by email (authenticated to prevent scraping)
