@@ -364,6 +364,6 @@ app.post('/api/integrations/core/uploadFile', authRequired, upload.single('file'
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`API server listening on http://0.0.0.0:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`API server listening on http://localhost:${PORT}`);
 });
