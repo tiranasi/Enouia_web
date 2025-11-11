@@ -7,6 +7,7 @@ import bcrypt from 'bcryptjs';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { normalizeUploadUrl, normalizeSharedStyleData } from './utils/uploads.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,21 +43,6 @@ function parseJsonSafe(val, fallback = null) {
   try { return JSON.parse(val); } catch { return fallback; }
 }
 
-// Normalize file URLs for uploads when serving behind Nginx
-function normalizeUploadUrl(u) {
-  if (!u || typeof u !== 'string') return u;
-  if (u.startsWith('/api/uploads/')) return u;
-  // http(s)://localhost:3001/api/uploads/xxx -> /api/uploads/xxx
-  const a = u.match(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/api\/uploads\/(.+)$/i);
-  if (a) return `/api/uploads/${a[3]}`;
-  // localhost or 127.0.0.1 absolute URLs -> relative
-  const m = u.match(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/uploads\/(.+)$/i);
-  if (m) return `/api/uploads/${m[3]}`;
-  // plain absolute path starting with /uploads
-  if (u.startsWith('/uploads/')) return `/api/uploads/${u.slice('/uploads/'.length)}`;
-  return u;
-}
-
 function toFrontend(entity, item) {
   if (!item) return item;
   const x = { ...item };
@@ -65,7 +51,7 @@ function toFrontend(entity, item) {
       x.image_url = normalizeUploadUrl(item.image_url);
       x.tags = parseJsonSafe(item.tagsJson, []);
       x.liked_by = parseJsonSafe(item.likedByJson, []);
-      x.shared_style_data = parseJsonSafe(item.sharedStyleDataJson, null);
+      x.shared_style_data = normalizeSharedStyleData(parseJsonSafe(item.sharedStyleDataJson, null));
       delete x.tagsJson; delete x.likedByJson; delete x.sharedStyleDataJson;
       break;
     case 'EmotionReport':
@@ -102,7 +88,14 @@ function fromFrontend(entity, data) {
       if (d.image_url !== undefined) d.image_url = normalizeUploadUrl(d.image_url);
       if (Array.isArray(d.tags)) d.tagsJson = JSON.stringify(d.tags);
       if (Array.isArray(d.liked_by)) d.likedByJson = JSON.stringify(d.liked_by);
-      if (d.shared_style_data && typeof d.shared_style_data === 'object') d.sharedStyleDataJson = JSON.stringify(d.shared_style_data);
+      if (d.shared_style_data !== undefined) {
+        if (d.shared_style_data && typeof d.shared_style_data === 'object') {
+          const normalizedShared = normalizeSharedStyleData(d.shared_style_data);
+          d.sharedStyleDataJson = JSON.stringify(normalizedShared);
+        } else {
+          d.sharedStyleDataJson = null;
+        }
+      }
       // Normalize optional numeric fields coming from UI (Select returns string)
       if (d.shared_style_id !== undefined) {
         const n = Number(d.shared_style_id);
@@ -407,4 +400,3 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, '127.0.0.1', () => {
   console.log(`API server on http://127.0.0.1:${PORT}`);
 });
-

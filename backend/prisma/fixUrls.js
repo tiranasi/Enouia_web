@@ -1,71 +1,92 @@
 import { PrismaClient } from '@prisma/client';
+import { normalizeUploadUrl, normalizeSharedStyleData } from '../src/utils/uploads.js';
 
 const prisma = new PrismaClient();
 
-function normalize(u) {
-  if (!u || typeof u !== 'string') return u;
-  const m = u.match(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/uploads\/(.+)$/i);
-  if (m) return `/api/uploads/${m[3]}`;
-  if (u.startsWith('/uploads/')) return `/api/uploads/${u.slice('/uploads/'.length)}`;
-  return u;
+function parseJsonSafe(val) {
+  if (typeof val !== 'string' || val.length === 0) return null;
+  try {
+    return JSON.parse(val);
+  } catch {
+    return null;
+  }
+}
+
+async function applyUpdates(ops, label) {
+  if (!ops.length) return 0;
+  console.log(`Applying ${ops.length} ${label} fixes...`);
+  for (const op of ops) {
+    await op;
+  }
+  return ops.length;
 }
 
 async function run() {
-  const updates = [];
+  let total = 0;
 
-  // Users
-  const users = await prisma.user.findMany({});
-  for (const u of users) {
-    const v = normalize(u.avatar_url);
-    if (v !== u.avatar_url) {
-      updates.push(prisma.user.update({ where: { id: u.id }, data: { avatar_url: v } }));
+  const userOps = [];
+  const users = await prisma.user.findMany({ select: { id: true, avatar_url: true } });
+  for (const user of users) {
+    const avatar = normalizeUploadUrl(user.avatar_url);
+    if (avatar !== user.avatar_url) {
+      userOps.push(prisma.user.update({ where: { id: user.id }, data: { avatar_url: avatar } }));
     }
   }
+  total += await applyUpdates(userOps, 'user');
 
-  // Posts
-  const posts = await prisma.post.findMany({});
-  for (const p of posts) {
-    const v = normalize(p.image_url);
-    if (v !== p.image_url) {
-      updates.push(prisma.post.update({ where: { id: p.id }, data: { image_url: v } }));
+  const postOps = [];
+  const posts = await prisma.post.findMany({ select: { id: true, image_url: true, sharedStyleDataJson: true } });
+  for (const post of posts) {
+    const data = {};
+    const imageUrl = normalizeUploadUrl(post.image_url);
+    if (imageUrl !== post.image_url) data.image_url = imageUrl;
+    if (post.sharedStyleDataJson) {
+      const shared = parseJsonSafe(post.sharedStyleDataJson);
+      const normalizedShared = normalizeSharedStyleData(shared);
+      if (normalizedShared && normalizedShared !== shared) {
+        data.sharedStyleDataJson = JSON.stringify(normalizedShared);
+      }
+    }
+    if (Object.keys(data).length) {
+      postOps.push(prisma.post.update({ where: { id: post.id }, data }));
     }
   }
+  total += await applyUpdates(postOps, 'post');
 
-  // ChatStyle
-  const styles = await prisma.chatStyle.findMany({});
-  for (const s of styles) {
-    const v = normalize(s.avatar);
-    if (v !== s.avatar) {
-      updates.push(prisma.chatStyle.update({ where: { id: s.id }, data: { avatar: v } }));
+  const styleOps = [];
+  const styles = await prisma.chatStyle.findMany({ select: { id: true, avatar: true } });
+  for (const style of styles) {
+    const avatar = normalizeUploadUrl(style.avatar);
+    if (avatar !== style.avatar) {
+      styleOps.push(prisma.chatStyle.update({ where: { id: style.id }, data: { avatar } }));
     }
   }
+  total += await applyUpdates(styleOps, 'chat style');
 
-  // ChatHistory
-  const chats = await prisma.chatHistory.findMany({});
-  for (const c of chats) {
-    const v = normalize(c.style_avatar);
-    if (v !== c.style_avatar) {
-      updates.push(prisma.chatHistory.update({ where: { id: c.id }, data: { style_avatar: v } }));
+  const historyOps = [];
+  const histories = await prisma.chatHistory.findMany({ select: { id: true, style_avatar: true } });
+  for (const history of histories) {
+    const avatar = normalizeUploadUrl(history.style_avatar);
+    if (avatar !== history.style_avatar) {
+      historyOps.push(prisma.chatHistory.update({ where: { id: history.id }, data: { style_avatar: avatar } }));
     }
   }
+  total += await applyUpdates(historyOps, 'chat history');
 
-  // Course
-  const courses = await prisma.course.findMany({});
-  for (const c of courses) {
-    const v = normalize(c.cover_image);
-    if (v !== c.cover_image) {
-      updates.push(prisma.course.update({ where: { id: c.id }, data: { cover_image: v } }));
+  const courseOps = [];
+  const courses = await prisma.course.findMany({ select: { id: true, cover_image: true } });
+  for (const course of courses) {
+    const cover = normalizeUploadUrl(course.cover_image);
+    if (cover !== course.cover_image) {
+      courseOps.push(prisma.course.update({ where: { id: course.id }, data: { cover_image: cover } }));
     }
   }
+  total += await applyUpdates(courseOps, 'course');
 
-  if (updates.length) {
-    console.log(`Applying ${updates.length} URL fixes...`);
-    for (const op of updates) {
-      await op;
-    }
-    console.log('URL fix completed.');
-  } else {
+  if (total === 0) {
     console.log('No URL fixes needed.');
+  } else {
+    console.log(`URL fixes completed (${total} updates).`);
   }
 }
 
